@@ -21,6 +21,7 @@ from urllib.parse import urlparse
 def get_fs(path, conf, local_only=False):
     from .local_filesystem import LocalFileSystem
     from .s3_filesystem import S3FileSystem
+    from .abfss_filesystem import AbfssFileSystem
 
     if local_only:
         return LocalFileSystem.get_instance()
@@ -35,5 +36,9 @@ def get_fs(path, conf, local_only=False):
             return fs
         elif parsed_path.scheme in ["hdfs"]:
             raise RuntimeError("Hadoop FS not implemented")
+        elif parsed_path.scheme in ["abfss"]:
+            fs = AbfssFileSystem.get_instance()
+            fs.set_conf(conf)
+            return fs
 
     raise RuntimeError("No filesystem found for this location: %s" % path)

@@ -16,7 +16,8 @@
 # under the License.
 
 __all__ = ["get_fs", "FileStatus", "FileSystem", "FileSystemInputFile", "FileSystemOutputFile",
-           "FilesystemTableOperations", "FilesystemTables", "LocalFileSystem", "S3File", "S3FileSystem"]
+           "FilesystemTableOperations", "FilesystemTables", "LocalFileSystem", "S3File", "S3FileSystem",
+           "AbfssFile", "AbfssFileSystem"]
 
 from .file_status import FileStatus
 from .file_system import FileSystem, FileSystemInputFile, FileSystemOutputFile
@@ -24,4 +25,5 @@ from .filesystem_table_operations import FilesystemTableOperations
 from .filesystem_tables import FilesystemTables
 from .local_filesystem import LocalFileSystem
 from .s3_filesystem import S3File, S3FileSystem
+from .abfss_filesystem import AbfssFile, AbfssFileSystem
 from .util import get_fs

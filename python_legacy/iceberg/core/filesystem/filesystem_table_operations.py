@@ -126,7 +126,8 @@ class FilesystemTableOperations(TableOperations):
             return 0
         else:
             with fs.open(version_hint_file, "r") as fo:
-                return int(fo.readline().replace("\n", ""))
+                # return int(fo.readline().replace("\n", ""))
+                return int(next(fo.readline()))
 
     def write_version_hint(self, version):
         version_hint_file = str(self.version_hint_file())
