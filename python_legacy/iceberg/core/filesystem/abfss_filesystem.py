@@ -24,8 +24,8 @@ def url_to_container_datalake_name_tuple(url: Union[Path, str]):
     raise ValueError(f"Invalid abfss url: {url}")
 
 class AbfssFileSystem(FileSystem):
-    STORAGE_ACCOUNT_NAME = "abfss_storage_account_name"
-    STORAGE_ACCOUNT_KEY = "abfss_storage_account_key"
+    ACCOUNT_NAME = "account_name"
+    ACCOUNT_KEY = "account_key"
     fs_inst = None
 
     @staticmethod
@@ -82,7 +82,7 @@ class AbfssFileSystem(FileSystem):
             global ABFSS_CLIENT
             if ABFSS_CLIENT is None:
                 ABFSS_CLIENT = DataLakeServiceClient(account_url="{}://{}.dfs.core.windows.net".format(
-                    "https", CONF.get(AbfssFileSystem.STORAGE_ACCOUNT_NAME)), credential=CONF.get(AbfssFileSystem.STORAGE_ACCOUNT_KEY))
+                    "https", CONF.get(AbfssFileSystem.ACCOUNT_NAME)), credential=CONF.get(AbfssFileSystem.ACCOUNT_KEY))
             return ABFSS_CLIENT        
         except Exception as e:
             _logger.error(e)
