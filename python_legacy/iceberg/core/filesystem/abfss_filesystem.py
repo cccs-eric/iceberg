@@ -8,6 +8,7 @@ from azure.core.exceptions import ResourceNotFoundError
 from azure.storage.filedatalake import (DataLakeFileClient,
                                         DataLakeServiceClient,
                                         FileSystemClient)
+from iceberg.exceptions.exceptions import FileSystemNotFound
 
 from .file_status import FileStatus
 from .file_system import FileSystem
@@ -26,6 +27,7 @@ def url_to_container_datalake_name_tuple(url: Union[Path, str]):
 class AbfssFileSystem(FileSystem):
     ACCOUNT_NAME = "account_name"
     ACCOUNT_KEY = "account_key"
+    SAS_TOKEN = "sas_token"
     fs_inst = None
 
     @staticmethod
@@ -41,6 +43,9 @@ class AbfssFileSystem(FileSystem):
     def set_conf(self, conf: dict):
         global CONF
         CONF = conf
+
+    def _get_credentials(self):
+        return CONF.get(AbfssFileSystem.SAS_TOKEN) if (AbfssFileSystem.SAS_TOKEN in CONF) else CONF.get(AbfssFileSystem.ACCOUNT_KEY)
 
     def exists(self, path):
         file_client = AbfssFileSystem.get_instance().getFileClient(path)
@@ -82,7 +87,7 @@ class AbfssFileSystem(FileSystem):
             global ABFSS_CLIENT
             if ABFSS_CLIENT is None:
                 ABFSS_CLIENT = DataLakeServiceClient(account_url="{}://{}.dfs.core.windows.net".format(
-                    "https", CONF.get(AbfssFileSystem.ACCOUNT_NAME)), credential=CONF.get(AbfssFileSystem.ACCOUNT_KEY))
+                    "https", CONF.get(AbfssFileSystem.ACCOUNT_NAME)), credential=self._get_credentials())
             return ABFSS_CLIENT        
         except Exception as e:
             _logger.error(e)
@@ -110,7 +115,11 @@ class AbfssFile(object):
         self.path = path
         self.file_client = AbfssFileSystem.get_instance().getFileClient(path)
         if mode.startswith("r"):
-            self.storageStreamDownloader = self.file_client.download_file(0)
+            try:
+                self.storageStreamDownloader = self.file_client.download_file(0)
+            except ResourceNotFoundError as e:
+                # TODO: find or create a better exception for this.  Don't want to raise Azure exception.
+                raise FileSystemNotFound(f"Azure File not found: {self.path}") from e
             self.size = self.storageStreamDownloader.properties.size
         self.closed = False
         self.mode = mode
